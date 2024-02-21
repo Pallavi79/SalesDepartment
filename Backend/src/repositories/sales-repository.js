@@ -30,7 +30,6 @@ class SalesRepository{
     }
 
     async getAll(){
-        console.log('inside getAll')
         try {
             const data = await Sales.find();
             return data;
@@ -39,25 +38,38 @@ class SalesRepository{
             throw error;
         }
     }
-    async transactions(searchText, page, perPage){
+    async transactions(searchText,month, page, perPage){
         try {
-            let query = {};
-            if (searchText) {
-                const regex = new RegExp(searchText, 'i');
-                query.$or = [
-                    { category: regex },
-                    { description: regex },
-                    
-                ];
-            }
-            if (!isNaN(parseFloat(searchText))) {
-                query.$or.push({ price: parseFloat(searchText) });
-            }
-            // console.log(query);
-            return await Sales.find(query)
-            .skip((page - 1) * perPage)
-            .limit(perPage);
+            const monthNumber = this.monthMap[month.toLowerCase()];
 
+        if (!monthNumber) {
+            throw new Error('Invalid month name. Please provide a valid month name.');
+        }
+
+        // Define the match criteria
+        const matchCriteria = {
+            $expr: { $eq: [{ $month: "$dateOfSale" }, monthNumber] }
+        };
+
+        if (searchText) {
+            const regex = new RegExp(searchText, 'i');
+            matchCriteria.$or = [
+                { category: regex },
+                { description: regex }
+            ];
+        }
+        if (!isNaN(parseFloat(searchText))) {
+            matchCriteria.$or.push({ price: parseFloat(searchText) });
+        }
+
+        const response = await Sales.aggregate([
+            { $match: matchCriteria },
+            { $skip: (page - 1) * perPage },
+            { $limit: perPage }
+        ]);
+
+        return response;
+            
         } catch (error) {
             console.log(error);
             throw error;

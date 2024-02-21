@@ -21,8 +21,8 @@ class SalesService{
         return response;
     }
 
-    async listTransactions(searchText, page, perPage){  
-        const response = await this.salesRepository.transactions(searchText, page, perPage);
+    async listTransactions(searchText,month, page, perPage){  
+        const response = await this.salesRepository.transactions(searchText,month, page, perPage);
         return response;
     }
     async getStatistics(month){

@@ -41,9 +41,10 @@ const getAll = async(req,res)=>{
 const listTransactions = async(req,res)=>{
     try {
         const searchText = req.query.search || '';
+        const month = req.query.month || 'march';
         const page = parseInt(req.query.page) || 1;
         const perPage = parseInt(req.query.perPage) || 10;
-        const transactions = await salesService.listTransactions(searchText, page, perPage);
+        const transactions = await salesService.listTransactions(searchText,month, page, perPage);
         return res.status(200).json({
             success: true,
             message: 'Successfully fetched data from database',
